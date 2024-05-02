@@ -38,12 +38,10 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
-              containerPort: 8080   #spring boot port
+              containerPort: 8080   # Spring Boot port
               protocol: TCP
-               - name: http
-              containerPort: {{ .Values.service.port }}
-              containerPort: 27017  #mongodb port
+            - name: mongodb
+              containerPort: 27017  # MongoDB port
               protocol: TCP
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
@@ -71,3 +69,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+
