@@ -43,6 +43,10 @@ service:
   type: LoadBalancer
   port: 80
 
+service:
+  type: ClusteerIP
+  port: 27017
+
 ingress:
   enabled: false
   className: ""

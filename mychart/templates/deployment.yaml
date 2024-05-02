@@ -39,8 +39,10 @@ spec:
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
-              containerPort: 8080
-              containerPort: 27017
+              containerPort: 8080   #spring boot port
+              protocol: TCP
+               - name: http
+              containerPort: 27017  #mongodb port
               protocol: TCP
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
