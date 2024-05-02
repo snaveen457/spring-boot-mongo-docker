@@ -44,7 +44,7 @@ service:
   port: 80
 
 service:
-  type: NodePort
+  type: ClusterIP
   port: 27017
 
 ingress:
