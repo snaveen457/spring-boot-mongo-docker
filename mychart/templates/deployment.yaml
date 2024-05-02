@@ -42,6 +42,7 @@ spec:
               containerPort: 8080   #spring boot port
               protocol: TCP
                - name: http
+              containerPort: {{ .Values.service.port }}
               containerPort: 27017  #mongodb port
               protocol: TCP
           livenessProbe:
