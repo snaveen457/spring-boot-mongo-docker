@@ -141,3 +141,17 @@ mongodb:
       requests:
         storage: 100Mi
 
+
+  mongodb:
+  replicaSetName: mongodbrs
+  containerName: mongodbcontainer
+  image: mongo
+  port: 27017
+  volumeMountPath: /data/db
+  initdbRootUsername: springapp
+  initdbRootPasswordKey: password
+  service:
+    name: mongo
+    type: ClusterIP
+    port: 27017
+
