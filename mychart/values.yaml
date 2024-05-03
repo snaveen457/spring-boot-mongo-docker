@@ -126,16 +126,17 @@ mongodb:
     storageClassName: manual
     storage: 1Gi
     accessModes:
-      - ReadWriteMany
+      - ReadWriteOnce  # Use ReadWriteOnce instead of ReadWriteMany
     path: "/tmp/mongodata"
 
   persistentVolumeClaim:
     storageClassName: manual
     accessModes:
-      - ReadWriteOnce
+      - ReadWriteOnce  # Use ReadWriteOnce instead of ReadWriteMany
     resources:
       requests:
         storage: 100Mi
+
 
   replicaSetName: mongodbrs
   containerName: mongodbcontainer
@@ -149,3 +150,4 @@ mongodb:
     type: ClusterIP
     port: 27017
 
+  
