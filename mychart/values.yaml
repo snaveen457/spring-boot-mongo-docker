@@ -70,7 +70,6 @@ resources: {}
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
-
 livenessProbe:
   httpGet:
     path: /
@@ -87,7 +86,7 @@ readinessProbe:
     timeoutSeconds: 5
     initialDelaySeconds: 60
     periodSeconds: 10
-
+    
     
 
 
@@ -116,3 +115,29 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+
+  springApp:
+  configMap:
+    username: springapp
+    password: mongodb@123
+
+  secrets:
+    password: devdb@123
+
+mongodb:
+  persistentVolume:
+    storageClassName: manual
+    storage: 1Gi
+    accessModes:
+      - ReadWriteOnce
+    path: "/tmp/mongodata"
+
+  persistentVolumeClaim:
+    storageClassName: manual
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 100Mi
+

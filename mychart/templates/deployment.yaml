@@ -39,7 +39,6 @@ spec:
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
-              containerPort: 8080
               protocol: TCP
           livenessProbe:
             {{- toYaml .Values.livenessProbe | nindent 12 }}
@@ -67,3 +66,92 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+
+
+
+      # ConfigMap for Spring Boot application
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-springappconfigmap
+data:
+  username: {{ .Values.springApp.configMap.username }}
+  password: {{ .Values.springApp.configMap.password }}
+
+# Secret for Spring Boot application
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-springappsecrets
+type: Opaque
+stringData:
+  password: {{ .Values.springApp.secrets.password }}
+
+# PersistentVolume for MongoDB data
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-pv-hostpath
+spec:
+  storageClassName: {{ .Values.mongodb.persistentVolume.storageClassName }}
+  capacity:
+    storage: {{ .Values.mongodb.persistentVolume.storage }}
+  accessModes:
+    - {{ .Values.mongodb.persistentVolume.accessModes | quote }}
+
+  hostPath:
+    path: "{{ .Values.mongodb.persistentVolume.path }}"
+    type: DirectoryOrCreate
+
+# PersistentVolumeClaim for MongoDB data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-pvc-hostpath
+spec:
+  storageClassName: {{ .Values.mongodb.persistentVolumeClaim.storageClassName }}
+  accessModes:
+    - {{ .Values.mongodb.persistentVolumeClaim.accessModes | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.mongodb.persistentVolumeClaim.resources.requests.storage }}
+
+# Deployment for Spring Boot application
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-springappdeployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: springapp
+  template:
+    metadata:
+      name: {{ .Release.Name }}-springapppod
+      labels:
+        app: springapp
+    spec:
+      containers:
+        - name: springappcontainer
+          image: dockerhandson/spring-boot-mongo
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MONGO_DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Release.Name }}-springappconfigmap
+                  key: username
+            - name: MONGO_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-springappsecrets
+                  key: password
+            - name: MONGO_DB_HOSTNAME
+              value: mongo
+
