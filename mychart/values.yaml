@@ -126,7 +126,7 @@ mongodb:
     storageClassName: manual
     storage: 1Gi
     accessModes:
-      - ReadWriteOnce
+      - ReadWriteMany
     path: "/tmp/mongodata"
 
   persistentVolumeClaim:
