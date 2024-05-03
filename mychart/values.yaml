@@ -70,25 +70,22 @@ resources: {}
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
+
 livenessProbe:
   httpGet:
     path: /
     port: http
-    port: 8080
     timeoutSeconds: 5
     initialDelaySeconds: 60
     periodSeconds: 10
+
 readinessProbe:
   httpGet:
     path: /
     port: http
-    port: 8080
     timeoutSeconds: 5
     initialDelaySeconds: 60
     periodSeconds: 10
-    
-    
-
 
 autoscaling:
   enabled: false
@@ -116,8 +113,7 @@ tolerations: []
 
 affinity: {}
 
-
-  springApp:
+springApp:
   configMap:
     username: springapp
     password: mongodb@123
@@ -141,8 +137,6 @@ mongodb:
       requests:
         storage: 100Mi
 
-
-  mongodb:
   replicaSetName: mongodbrs
   containerName: mongodbcontainer
   image: mongo

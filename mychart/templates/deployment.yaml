@@ -1,124 +1,3 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: {{ include "mychart.fullname" . }}
-  labels:
-    {{- include "mychart.labels" . | nindent 4 }}
-spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
-  {{- end }}
-  selector:
-    matchLabels:
-      {{- include "mychart.selectorLabels" . | nindent 6 }}
-  template:
-    metadata:
-      {{- with .Values.podAnnotations }}
-      annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      labels:
-        {{- include "mychart.labels" . | nindent 8 }}
-        {{- with .Values.podLabels }}
-        {{- toYaml . | nindent 8 }}
-        {{- end }}
-    spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      serviceAccountName: {{ include "mychart.serviceAccountName" . }}
-      securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      containers:
-        - name: {{ .Chart.Name }}
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-            - name: http
-              containerPort: {{ .Values.service.port }}
-              protocol: TCP
-          livenessProbe:
-            {{- toYaml .Values.livenessProbe | nindent 12 }}
-          readinessProbe:
-            {{- toYaml .Values.readinessProbe | nindent 12 }}
-          resources:
-            {{- toYaml .Values.resources | nindent 12 }}
-          {{- with .Values.volumeMounts }}
-          volumeMounts:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
-      {{- with .Values.volumes }}
-      volumes:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-
-
-
-      # ConfigMap for Spring Boot application
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ .Release.Name }}-springappconfigmap
-data:
-  username: {{ .Values.springApp.configMap.username }}
-  password: {{ .Values.springApp.configMap.password }}
-
-# Secret for Spring Boot application
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: {{ .Release.Name }}-springappsecrets
-type: Opaque
-stringData:
-  password: {{ .Values.springApp.secrets.password }}
-
-# PersistentVolume for MongoDB data
----
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: {{ .Release.Name }}-pv-hostpath
-spec:
-  storageClassName: {{ .Values.mongodb.persistentVolume.storageClassName }}
-  capacity:
-    storage: {{ .Values.mongodb.persistentVolume.storage }}
-  accessModes:
-    - {{ .Values.mongodb.persistentVolume.accessModes | quote }}
-
-  hostPath:
-    path: "{{ .Values.mongodb.persistentVolume.path }}"
-    type: DirectoryOrCreate
-
-# PersistentVolumeClaim for MongoDB data
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ .Release.Name }}-pvc-hostpath
-spec:
-  storageClassName: {{ .Values.mongodb.persistentVolumeClaim.storageClassName }}
-  accessModes:
-    - {{ .Values.mongodb.persistentVolumeClaim.accessModes | quote }}
-  resources:
-    requests:
-      storage: {{ .Values.mongodb.persistentVolumeClaim.resources.requests.storage }}
-
 # Deployment for Spring Boot application
 ---
 apiVersion: apps/v1
@@ -155,8 +34,7 @@ spec:
             - name: MONGO_DB_HOSTNAME
               value: mongo
 
-
-  # ReplicaSet for MongoDB
+# ReplicaSet for MongoDB
 ---
 apiVersion: apps/v1
 kind: ReplicaSet
@@ -209,4 +87,55 @@ spec:
   ports:
     - port: {{ .Values.mongodb.service.port }}
       targetPort: {{ .Values.mongodb.port }}
+
+# ConfigMap for Spring Boot application
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-springappconfigmap
+data:
+  username: {{ .Values.springApp.configMap.username }}
+  password: {{ .Values.springApp.configMap.password }}
+
+# Secret for Spring Boot application
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Release.Name }}-springappsecrets
+type: Opaque
+stringData:
+  password: {{ .Values.springApp.secrets.password }}
+
+# PersistentVolume for MongoDB data
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Release.Name }}-pv-hostpath
+spec:
+  storageClassName: {{ .Values.mongodb.persistentVolume.storageClassName }}
+  capacity:
+    storage: {{ .Values.mongodb.persistentVolume.storage }}
+  accessModes:
+    - {{ .Values.mongodb.persistentVolume.accessModes | quote }}
+
+  hostPath:
+    path: "{{ .Values.mongodb.persistentVolume.path }}"
+    type: DirectoryOrCreate
+
+# PersistentVolumeClaim for MongoDB data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Release.Name }}-pvc-hostpath
+spec:
+  storageClassName: {{ .Values.mongodb.persistentVolumeClaim.storageClassName }}
+  accessModes:
+    - {{ .Values.mongodb.persistentVolumeClaim.accessModes | quote }}
+  resources:
+    requests:
+      storage: {{ .Values.mongodb.persistentVolumeClaim.resources.requests.storage }}
 
